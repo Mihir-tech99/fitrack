@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitTrack AI - Smart Fitness & Nutrition Dashboard</title>
+  <meta name="description" content="Track your daily steps, calories, workouts, and AI meal scans with FitTrack AI.">
+  
+  <!-- PWA Manifest & Mobile Theme Meta -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="theme-color" content="#FF5500">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Aura Fitness AI">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- TensorFlow.js & MobileNet AI Vision Models -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Wrapper -->
+  <div id="app" class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <img src="logo.png" alt="Aura Fitness Logo" class="logo-img">
+        </div>
+        <div class="brand-text">
+          <h1>Aura<span class="gradient-text">Fitness</span></h1>
+          <span class="version-tag">Move • Strength • Wellness</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle-btn" class="icon-btn" title="Toggle Theme" aria-label="Toggle Dark and Light mode">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+
+        <!-- Quick Profile Avatar -->
+        <label class="user-avatar-btn" id="header-avatar-btn" for="profile-photo-file-input" title="Click to Change Profile Photo">
+          <img id="header-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" alt="Alex Rivers Profile">
+          <span class="online-indicator"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Main Content Area (Dynamic Screens) -->
+    <main class="main-content">
+
+      <!-- ================= HOME DASHBOARD SCREEN ================= -->
+      <section id="screen-home" class="screen-view active">
+        <!-- Hero Greeting Banner -->
+        <div class="hero-banner glass-card">
+          <div class="hero-content">
+            <span class="date-badge" id="today-date-badge"><i data-lucide="calendar"></i> Today, Oct 2</span>
+            <h2>Welcome back, <span class="gradient-text">Alex!</span> 👋</h2>
+            <p>You're 84% close to your daily active goal. Keep up the momentum!</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+              <div class="streak-pill">
+                <i data-lucide="flame"></i> 7-Day Active Streak!
+              </div>
+              <div class="streak-pill" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--emerald-400);">
+                <i data-lucide="clock"></i> Auto-Resets at 12:00 AM
+              </div>
+            </div>
+          </div>
+          <div class="hero-ring-summary">
+            <div class="ring-container">
+              <svg viewBox="0 0 100 100" class="ring-svg">
+                <circle cx="50" cy="50" r="42" class="ring-bg"></circle>
+                <circle cx="50" cy="50" r="42" class="ring-progress" id="home-main-ring" style="stroke-dashoffset: 42;"></circle>
+              </svg>
+              <div class="ring-label">
+                <span class="ring-number">84%</span>
+                <span class="ring-subtext">Goal Met</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Worke Style Black & Orange Split Hero Cards -->
+        <div class="worke-hero-grid">
+          <div class="worke-card dark-tile" id="card-body-weight" style="cursor:pointer;" title="Click to update Body Weight">
+            <div class="worke-tile-header">
+              <span class="worke-num-lg" id="home-body-weight-val">70<span class="worke-unit">kg</span></span>
+              <i data-lucide="edit-3" class="worke-dots"></i>
+            </div>
+            <div class="worke-tile-footer">
+              <strong>Body Weight</strong>
+              <span id="home-target-weight-val">Target: 68 kg</span>
+            </div>
+          </div>
+
+          <div class="worke-card orange-tile" id="card-workout-routine" style="cursor:pointer;" title="Click to launch Workout Routine">
+            <div class="worke-tile-header">
+              <span class="worke-num-lg" id="home-workout-count-val">2</span>
+              <i data-lucide="play-circle" class="worke-dots"></i>
+            </div>
+            <div class="worke-tile-footer">
+              <strong id="home-workout-name-val">Full Body Strength</strong>
+              <span>Active Routine</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Worke Style Calendar Day Strip -->
+        <div class="worke-day-strip" id="calendar-day-strip">
+          <div class="day-pill" data-day="mon"><span>Mon</span><strong>11</strong></div>
+          <div class="day-pill" data-day="tue"><span>Tue</span><strong>12</strong></div>
+          <div class="day-pill" data-day="wed"><span>Wed</span><strong>13</strong></div>
+          <div class="day-pill active" data-day="thu"><span>Thu</span><strong>14</strong></div>
+          <div class="day-pill" data-day="fri"><span>Fri</span><strong>15</strong></div>
+          <div class="day-pill" data-day="sat"><span>Sat</span><strong>16</strong></div>
+          <div class="day-pill" data-day="sun"><span>Sun</span><strong>17</strong></div>
+        </div>
+
+        <!-- Quick Stats Cards Grid -->
+        <div class="stats-grid">
+          <!-- Card 1: Steps -->
+          <div class="stat-card glass-card" id="card-goto-steps">
+            <div class="stat-header">
+              <div class="stat-icon emerald">
+                <i data-lucide="footprints"></i>
+              </div>
+              <span class="stat-trend positive"><i data-lucide="trending-up"></i> +12%</span>
+            </div>
+            <div class="stat-value-box">
+              <span class="stat-number" id="home-steps-val">8,420</span>
+              <span class="stat-unit">/ 10,000 steps</span>
+            </div>
+            <div class="mini-progress-bar">
+              <div class="bar-fill emerald-fill" style="width: 84.2%;"></div>
+            </div>
+          </div>
+
+          <!-- Card 2: Calories -->
+          <div class="stat-card glass-card" id="card-goto-calories">
+            <div class="stat-header">
+              <div class="stat-icon orange">
+                <i data-lucide="flame"></i>
+              </div>
+              <span class="stat-trend neutral">550 left</span>
+            </div>
+            <div class="stat-value-box">
+              <span class="stat-number" id="home-cals-val">1,650</span>
+              <span class="stat-unit">/ 2,200 kcal</span>
+            </div>
+            <div class="mini-progress-bar">
+              <div class="bar-fill orange-fill" style="width: 75%;"></div>
+            </div>
+          </div>
+
+          <!-- Card 3: Active Time -->
+          <div class="stat-card glass-card">
+            <div class="stat-header">
+              <div class="stat-icon cyan">
+                <i data-lucide="timer"></i>
+              </div>
+              <span class="stat-trend positive"><i data-lucide="check-circle"></i> On Track</span>
+            </div>
+            <div class="stat-value-box">
+              <span class="stat-number">54</span>
+              <span class="stat-unit">/ 60 active min</span>
+            </div>
+            <div class="mini-progress-bar">
+              <div class="bar-fill cyan-fill" style="width: 90%;"></div>
+            </div>
+          </div>
+
+          <!-- Card 4: Water Tracker Card -->
+          <div class="stat-card glass-card water-card">
+            <div class="stat-header">
+              <div class="stat-icon blue">
+                <i data-lucide="droplet"></i>
+              </div>
+              <button class="add-water-btn" id="quick-add-water" title="Add 250ml water">+250 ml</button>
+            </div>
+            <div class="stat-value-box">
+              <span class="stat-number" id="home-water-val">2,000</span>
+              <span class="stat-unit">/ 2,500 ml</span>
+            </div>
+            <div class="mini-progress-bar">
+              <div class="bar-fill blue-fill" id="water-bar-fill" style="width: 80%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Activity Visual Chart -->
+        <div class="section-container glass-card">
+          <div class="section-header">
+            <h3><i data-lucide="bar-chart-2"></i> Weekly Activity</h3>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="dot emerald-dot"></span> Steps</span>
+              <span class="legend-item"><span class="dot orange-dot"></span> Calories</span>
+            </div>
+          </div>
+          <div class="chart-bars-container" id="weekly-activity-chart">
+            <div class="chart-bar-group" data-day="mon">
+              <div class="bar-pair">
+                <div class="bar step-b" style="height: 65%;" title="Mon: 6,500 steps"></div>
+                <div class="bar cal-b" style="height: 70%;" title="Mon: 1,500 kcal"></div>
+              </div>
+              <span class="day-label">Mon</span>
+            </div>
+
+            <div class="chart-bar-group" data-day="tue">
+              <div class="bar-pair">
+                <div class="bar step-b" style="height: 80%;" title="Tue: 8,000 steps"></div>
+                <div class="bar cal-b" style="height: 78%;" title="Tue: 1,700 kcal"></div>
+              </div>
+              <span class="day-label">Tue</span>
+            </div>
+
+            <div class="chart-bar-group" data-day="wed">
+              <div class="bar-pair">
+                <div class="bar step-b" style="height: 45%;" title="Wed: 4,500 steps"></div>
+                <div class="bar cal-b" style="height: 50%;" title="Wed: 1,200 kcal"></div>
+              </div>
+              <span class="day-label">Wed</span>
+            </div>
+
+            <div class="chart-bar-group" data-day="thu">
+              <div class="bar-pair">
+                <div class="bar step-b" style="height: 95%;" title="Thu: 9,500 steps"></div>
+                <div class="bar cal-b" style="height: 88%;" title="Thu: 1,900 kcal"></div>
+              </div>
+              <span class="day-label">Thu</span>
+            </div>
+
+            <div class="chart-bar-group active-day" data-day="fri">
+              <div class="bar-pair">
+                <div class="bar step-b" style="height: 84%;" title="Fri (Today): 8,420 steps"></div>
+                <div class="bar cal-b" style="height: 75%;" title="Fri (Today): 1,650 kcal"></div>
+              </div>
+              <span class="day-label font-bold">Fri</span>
+            </div>
+
+            <div class="chart-bar-group" data-day="sat">
+              <div class="bar-pair">
+                <div class="bar step-b opacity-40" style="height: 20%;" title="Sat: 0 steps"></div>
+                <div class="bar cal-b opacity-40" style="height: 20%;" title="Sat: 0 kcal"></div>
+              </div>
+              <span class="day-label">Sat</span>
+            </div>
+
+            <div class="chart-bar-group" data-day="sun">
+              <div class="bar-pair">
+                <div class="bar step-b opacity-40" style="height: 20%;" title="Sun: 0 steps"></div>
+                <div class="bar cal-b opacity-40" style="height: 20%;" title="Sun: 0 kcal"></div>
+              </div>
+              <span class="day-label">Sun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Action Shortcuts -->
+        <div class="quick-actions-row">
+          <button class="action-tile glass-card" id="tile-scan-meal">
+            <div class="tile-icon violet-bg">
+              <i data-lucide="camera"></i>
+            </div>
+            <span>Scan AI Meal</span>
+          </button>
+
+          <button class="action-tile glass-card" id="tile-start-workout">
+            <div class="tile-icon emerald-bg">
+              <i data-lucide="play-circle"></i>
+            </div>
+            <span>Start Workout</span>
+          </button>
+
+          <button class="action-tile glass-card" id="tile-log-water">
+            <div class="tile-icon blue-bg">
+              <i data-lucide="droplet"></i>
+            </div>
+            <span>Log Water</span>
+          </button>
+
+          <button class="action-tile glass-card" id="tile-view-stats">
+            <div class="tile-icon cyan-bg">
+              <i data-lucide="award"></i>
+            </div>
+            <span>Badges</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= STEP COUNTER SCREEN ================= -->
+      <section id="screen-steps" class="screen-view">
+        <div class="screen-header">
+          <h2><i data-lucide="footprints" class="emerald-text"></i> Step Counter</h2>
+          <span class="sub-header-text">Track your daily movement and distance</span>
+        </div>
+
+        <!-- Hero Step Gauge -->
+        <div class="step-gauge-card glass-card">
+          <div class="large-ring-box">
+            <svg viewBox="0 0 200 200" class="large-ring-svg">
+              <circle cx="100" cy="100" r="85" class="ring-bg-lg"></circle>
+              <circle cx="100" cy="100" r="85" class="ring-progress-lg" id="step-ring-progress"></circle>
+            </svg>
+            <div class="large-ring-center">
+              <i data-lucide="footprints" class="pulse-icon"></i>
+              <h1 id="step-counter-display">8,420</h1>
+              <p>steps taken</p>
+              <div class="goal-pill">
+                Goal: <span id="current-step-goal">10,000</span> steps
+              </div>
+            </div>
+          </div>
+
+          <!-- Device Motion Hardware Sensor Toggle -->
+          <div class="sensor-control-banner">
+            <div class="sensor-info">
+              <i data-lucide="activity" class="sensor-icon" id="sensor-status-icon"></i>
+              <div>
+                <strong>Device Motion Step Sensor</strong>
+                <p id="sensor-status-text">Hardware accelerometer step tracking</p>
+              </div>
+            </div>
+            <button class="sensor-toggle-btn" id="toggle-motion-sensor-btn">
+              <i data-lucide="power"></i> <span id="sensor-btn-label">Enable Sensor</span>
+            </button>
+          </div>
+
+          <!-- Step Goal Modifier Control -->
+          <div class="goal-adjuster">
+            <span class="adjuster-label">Adjust Daily Goal:</span>
+            <div class="adjuster-controls">
+              <button id="goal-minus-btn" class="adjust-btn"><i data-lucide="minus"></i></button>
+              <span id="goal-target-val" class="goal-val-display">10,000</span>
+              <button id="goal-plus-btn" class="adjust-btn"><i data-lucide="plus"></i></button>
+            </div>
+          </div>
+
+          <!-- Quick Real-Time Step Logger -->
+          <div class="goal-adjuster" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--card-border);">
+            <span class="adjuster-label">Log Steps Currently:</span>
+            <div class="step-add-buttons">
+              <button class="step-add-pill" id="add-steps-100">+100 Steps</button>
+              <button class="step-add-pill" id="add-steps-500">+500 Steps</button>
+              <button class="step-add-pill" id="add-steps-1000">+1,000 Steps</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card glass-card">
+            <div class="metric-icon cyan-icon">
+              <i data-lucide="map-pin"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-value" id="step-dist-val">6.2 km</span>
+              <span class="metric-label">Distance Walked</span>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card">
+            <div class="metric-icon orange-icon">
+              <i data-lucide="flame"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-value" id="step-cals-val">420 kcal</span>
+              <span class="metric-label">Est. Burned</span>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card">
+            <div class="metric-icon emerald-icon">
+              <i data-lucide="clock"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-value">54 min</span>
+              <span class="metric-label">Active Time</span>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card">
+            <div class="metric-icon violet-icon">
+              <i data-lucide="trending-up"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-value">12 Floors</span>
+              <span class="metric-label">Elevated Climbed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hourly Step Breakdown -->
+        <div class="section-container glass-card">
+          <div class="section-header">
+            <h3><i data-lucide="clock"></i> Hourly Distribution</h3>
+            <span class="time-range">Peak: 5 PM - 6 PM</span>
+          </div>
+          <div class="hourly-bars">
+            <div class="hourly-col"><div class="bar-col" style="height: 15%;"></div><span>8 AM</span></div>
+            <div class="hourly-col"><div class="bar-col" style="height: 35%;"></div><span>10 AM</span></div>
+            <div class="hourly-col"><div class="bar-col" style="height: 55%;"></div><span>12 PM</span></div>
+            <div class="hourly-col"><div class="bar-col" style="height: 40%;"></div><span>2 PM</span></div>
+            <div class="hourly-col"><div class="bar-col" style="height: 70%;"></div><span>4 PM</span></div>
+            <div class="hourly-col active-peak"><div class="bar-col emerald-bg" style="height: 95%;"></div><span>6 PM</span></div>
+            <div class="hourly-col"><div class="bar-col" style="height: 50%;"></div><span>8 PM</span></div>
+          </div>
+        </div>
+
+        <!-- Milestone Badges -->
+        <div class="section-container glass-card">
+          <h3><i data-lucide="award"></i> Today's Milestones</h3>
+          <div class="milestones-row">
+            <div class="milestone-badge unlocked">
+              <div class="badge-icon"><i data-lucide="check"></i></div>
+              <div class="badge-text">
+                <strong>5,000 Steps</strong>
+                <span>Completed at 1:15 PM</span>
+              </div>
+            </div>
+            <div class="milestone-badge unlocked">
+              <div class="badge-icon"><i data-lucide="check"></i></div>
+              <div class="badge-text">
+                <strong>8,000 Steps</strong>
+                <span>Completed at 5:40 PM</span>
+              </div>
+            </div>
+            <div class="milestone-badge locked">
+              <div class="badge-icon"><i data-lucide="lock"></i></div>
+              <div class="badge-text">
+                <strong>10,000 Target</strong>
+                <span>1,580 steps remaining</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CALORIES DASHBOARD SCREEN ================= -->
+      <section id="screen-calories" class="screen-view">
+        <div class="screen-header">
+          <h2><i data-lucide="flame" class="orange-text"></i> Calories & Macros</h2>
+          <span class="sub-header-text">Monitor your caloric intake and nutrient balance</span>
+        </div>
+
+        <!-- Calorie Balance Summary Card -->
+        <div class="calorie-hero-card glass-card">
+          <div class="cal-hero-main">
+            <div class="cal-balance-box">
+              <span class="cal-big-num" id="cal-consumed-hero-val">1,650</span>
+              <span class="cal-label">Consumed kcal</span>
+            </div>
+            <div class="cal-divider"></div>
+            <div class="cal-target-box">
+              <div class="target-item">
+                <span class="lbl">Goal</span>
+                <span class="val" id="cal-goal-hero-val">2,200</span>
+              </div>
+              <div class="target-item">
+                <span class="lbl">Burned</span>
+                <span class="val text-orange" id="cal-burned-hero-val">420</span>
+              </div>
+              <div class="target-item">
+                <span class="lbl">Remaining</span>
+                <span class="val text-emerald" id="cal-remaining-val">970</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calorie Progress Bar -->
+          <div class="cal-progress-wrapper">
+            <div class="cal-progress-bar">
+              <div class="cal-progress-fill" id="cal-hero-progress-fill" style="width: 75%;"></div>
+            </div>
+            <div class="cal-bar-labels">
+              <span>0 kcal</span>
+              <span id="cal-percent-label">75% of budget</span>
+              <span id="cal-goal-label-end">2,200 kcal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meal Plan Selector Templates -->
+        <div class="section-container glass-card">
+          <h3><i data-lucide="book-open"></i> Nutrition Plan Templates</h3>
+          <div class="meal-plans-grid">
+            <button class="meal-plan-pill active" data-plan="balanced">
+              <i data-lucide="sparkles"></i> Balanced (2,200 kcal)
+            </button>
+            <button class="meal-plan-pill" data-plan="keto">
+              🥑 Keto Low Carb (1,800 kcal)
+            </button>
+            <button class="meal-plan-pill" data-plan="highprotein">
+              💪 High Protein (2,600 kcal)
+            </button>
+            <button class="meal-plan-pill" data-plan="weightloss">
+              🔥 Weight Loss (1,600 kcal)
+            </button>
+          </div>
+        </div>
+
+        <!-- Macros Breakdown Card -->
+        <div class="section-container glass-card">
+          <h3><i data-lucide="pie-chart"></i> Macronutrients</h3>
+          <div class="macros-grid">
+            <!-- Protein -->
+            <div class="macro-item">
+              <div class="macro-header">
+                <span class="macro-name"><i data-lucide="beef"></i> Protein</span>
+                <span class="macro-qty" id="macro-protein-text">110g / 140g</span>
+              </div>
+              <div class="macro-bar"><div class="macro-fill protein-fill" id="macro-protein-fill" style="width: 78.5%;"></div></div>
+            </div>
+
+            <!-- Carbs -->
+            <div class="macro-item">
+              <div class="macro-header">
+                <span class="macro-name"><i data-lucide="wheat"></i> Carbs</span>
+                <span class="macro-qty" id="macro-carbs-text">180g / 220g</span>
+              </div>
+              <div class="macro-bar"><div class="macro-fill carbs-fill" id="macro-carbs-fill" style="width: 81.8%;"></div></div>
+            </div>
+
+            <!-- Fats -->
+            <div class="macro-item">
+              <div class="macro-header">
+                <span class="macro-name"><i data-lucide="droplet"></i> Fats</span>
+                <span class="macro-qty" id="macro-fats-text">45g / 65g</span>
+              </div>
+              <div class="macro-bar"><div class="macro-fill fats-fill" id="macro-fats-fill" style="width: 69.2%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meal-by-Meal Log -->
+        <div class="section-container glass-card">
+          <div class="section-header">
+            <h3><i data-lucide="utensils"></i> Today's Meal Log</h3>
+            <div class="meal-log-actions">
+              <button class="add-custom-food-btn" id="open-custom-meal-modal-btn">+ Custom Food</button>
+              <button class="add-meal-btn" id="open-meal-scanner-btn">+ Scan Meal</button>
+            </div>
+          </div>
+
+          <div class="meals-list" id="meals-list-container">
+            <div class="empty-log-state" id="empty-log-placeholder">
+              <i data-lucide="utensils" class="empty-icon"></i>
+              <h4>No Meals Logged Today</h4>
+              <p>Upload a meal photo or scan your dish to start tracking!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MEAL SCANNER SCREEN ================= -->
+      <section id="screen-scanner" class="screen-view">
+        <div class="screen-header">
+          <h2><i data-lucide="camera" class="violet-text"></i> AI Meal Scanner</h2>
+          <span class="sub-header-text">Upload a meal photo to analyze calories and macros</span>
+        </div>
+
+        <!-- Scanner Viewfinder Container -->
+        <div class="viewfinder-container glass-card">
+          <div class="viewfinder-frame" id="scanner-frame">
+            <!-- HUD Reticle Corners -->
+            <div class="hud-corner top-left"></div>
+            <div class="hud-corner top-right"></div>
+            <div class="hud-corner bottom-left"></div>
+            <div class="hud-corner bottom-right"></div>
+
+            <!-- Animated Laser Scanning Sweep -->
+            <div class="laser-scanner" id="laser-line"></div>
+
+            <!-- Live Camera Video Feed (Active when camera toggled) -->
+            <video id="camera-video-feed" autoplay playsinline muted class="camera-feed-video hidden"></video>
+            <canvas id="snapshot-canvas" style="display:none;"></canvas>
+
+            <!-- Live Camera Shutter Button Overlay -->
+            <button class="shutter-snap-btn hidden" id="shutter-snap-btn">
+              <i data-lucide="camera"></i> 📸 Snap Photo & Analyze
+            </button>
+
+            <!-- Viewfinder Image Target / Preview -->
+            <div class="viewfinder-image-box" id="viewfinder-img-box">
+              <img id="scanned-image-preview" src="" class="hidden" alt="Food Scan Target">
+              <div class="scanner-overlay-hint" id="scanner-hint">
+                <i data-lucide="upload-cloud" class="scan-center-icon"></i>
+                <p>Upload a meal photo to analyze it</p>
+                <span class="hint-sub">Supports camera capture & file uploads</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scanner Controls Bar -->
+          <div class="scanner-controls-wrapper">
+            <div class="scanner-controls">
+              <label class="scanner-btn upload-scan trigger-scan" for="food-file-input">
+                <i data-lucide="upload"></i> Upload Meal Photo
+                <input type="file" id="food-file-input" accept="image/*" style="display:none;">
+              </label>
+
+              <button class="scanner-btn camera-toggle-btn" id="toggle-camera-btn">
+                <i data-lucide="video"></i> <span id="camera-btn-text">Live Camera</span>
+              </button>
+
+              <button class="icon-btn settings-gear-btn" id="open-ai-settings-btn" title="AI Model Settings">
+                <i data-lucide="settings"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Recognition Result Panel (Shown only when a meal is uploaded/analyzed) -->
+        <div class="scanner-result-panel glass-card hidden" id="ai-result-card">
+          <div class="result-header">
+            <div class="ai-badge" id="active-ai-engine-badge"><i data-lucide="cpu"></i> TF.js Vision AI</div>
+            <span class="confidence-tag" id="ai-confidence-tag"><i data-lucide="check-circle-2"></i> 98.4% Match</span>
+          </div>
+
+          <!-- Estimation Disclaimer Tag -->
+          <div class="estimate-disclaimer-pill">
+            <i data-lucide="info"></i> Estimated AI Nutrition Analysis (Review & Edit below)
+          </div>
+
+          <!-- Editable Food Title & Calories Review -->
+          <div class="result-food-info-editable">
+            <div class="edit-title-group">
+              <label for="edit-food-name-input">Detected Food Name:</label>
+              <input type="text" id="edit-food-name-input" class="editable-title-field" value="Detected Dish">
+              <span class="sub-detected-class" id="result-raw-class">Detected: food item</span>
+            </div>
+            <div class="edit-cals-group">
+              <label for="edit-cals-input">Calories:</label>
+              <div class="cals-input-wrapper">
+                <input type="number" id="edit-cals-input" class="editable-cals-field" value="450">
+                <span>kcal</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Dish Component Breakdown -->
+          <div class="overall-components-box">
+            <span class="overall-box-title"><i data-lucide="layers"></i> Detected Dish Components & Macros:</span>
+            <div class="components-tags-grid" id="overall-components-list">
+              <div class="component-item"><span class="comp-label">Protein Source:</span> <strong id="comp-protein-name">Protein Item</strong></div>
+              <div class="component-item"><span class="comp-label">Carb Source:</span> <strong id="comp-carbs-name">Carb Item</strong></div>
+              <div class="component-item"><span class="comp-label">Healthy Fat:</span> <strong id="comp-fats-name">Fat Item</strong></div>
+              <div class="component-item"><span class="comp-label">Veggies & Fiber:</span> <strong id="comp-fiber-name">Fiber Item</strong></div>
+            </div>
+          </div>
+
+          <!-- Portion Size Adjuster -->
+          <div class="portion-adjuster-box">
+            <span class="portion-title"><i data-lucide="scale"></i> Serving Portion Multiplier:</span>
+            <div class="portion-options">
+              <button class="portion-btn" data-portion="0.5">0.5x</button>
+              <button class="portion-btn active" data-portion="1.0">1.0x (Standard)</button>
+              <button class="portion-btn" data-portion="1.5">1.5x</button>
+              <button class="portion-btn" data-portion="2.0">2.0x</button>
+            </div>
+          </div>
+
+          <!-- Editable Macro breakdown grid -->
+          <div class="result-macros-editable-grid">
+            <div class="macro-edit-pill p-pill">
+              <label for="edit-protein-input">Protein (g)</label>
+              <input type="number" id="edit-protein-input" class="editable-macro-input" value="35">
+            </div>
+            <div class="macro-edit-pill c-pill">
+              <label for="edit-carbs-input">Carbs (g)</label>
+              <input type="number" id="edit-carbs-input" class="editable-macro-input" value="40">
+            </div>
+            <div class="macro-edit-pill f-pill">
+              <label for="edit-fats-input">Fats (g)</label>
+              <input type="number" id="edit-fats-input" class="editable-macro-input" value="15">
+            </div>
+            <div class="macro-edit-pill fib-pill">
+              <label for="edit-fiber-input">Fiber (g)</label>
+              <input type="number" id="edit-fiber-input" class="editable-macro-input" value="6">
+            </div>
+          </div>
+
+          <!-- AI Nutrition Analysis Badges -->
+          <div class="health-tags-row" id="result-health-tags">
+            <span class="tag-badge green"><i data-lucide="sparkles"></i> AI Estimated</span>
+          </div>
+
+          <button class="confirm-log-btn" id="confirm-log-scan-btn">
+            <i data-lucide="check-circle-2"></i> Save Meal to Log
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= WORKOUT TRACKER SCREEN ================= -->
+      <section id="screen-workout" class="screen-view">
+        <div class="screen-header">
+          <h2><i data-lucide="dumbbell" class="cyan-text"></i> Workouts & Training</h2>
+          <span class="sub-header-text">Choose a routine or start a live exercise session</span>
+        </div>
+
+        <!-- Workout Category Filter Pills -->
+        <div class="category-filters">
+          <button class="filter-pill active" data-category="all">All Workouts</button>
+          <button class="filter-pill" data-category="hiit">HIIT</button>
+          <button class="filter-pill" data-category="strength">Strength</button>
+          <button class="filter-pill" data-category="cardio">Cardio</button>
+          <button class="filter-pill" data-category="yoga">Yoga</button>
+        </div>
+
+        <!-- Workouts Grid -->
+        <div class="workouts-grid">
+          <!-- Workout Card 1 -->
+          <div class="workout-card glass-card" data-cat="hiit">
+            <div class="workout-card-img">
+              <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=600" alt="Full Body HIIT">
+              <span class="intensity-tag high">High Intensity</span>
+            </div>
+            <div class="workout-card-content">
+              <h3>Full Body Shred HIIT</h3>
+              <p class="workout-desc">Fast-paced interval training to maximize calorie burn and metabolic rate.</p>
+              <div class="workout-stats-row">
+                <span><i data-lucide="clock"></i> 30 mins</span>
+                <span><i data-lucide="flame"></i> ~350 kcal</span>
+                <span><i data-lucide="layers"></i> 5 Exercises</span>
+              </div>
+              <button class="start-workout-btn" data-title="Full Body Shred HIIT" data-duration="30">
+                <i data-lucide="play"></i> Start Session
+              </button>
+            </div>
+          </div>
+
+          <!-- Workout Card 2 -->
+          <div class="workout-card glass-card" data-cat="strength">
+            <div class="workout-card-img">
+              <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=600" alt="Upper Body Strength">
+              <span class="intensity-tag med">Medium</span>
+            </div>
+            <div class="workout-card-content">
+              <h3>Upper Body Hypertrophy</h3>
+              <p class="workout-desc">Target chest, back, shoulders, and arms with controlled compound sets.</p>
+              <div class="workout-stats-row">
+                <span><i data-lucide="clock"></i> 45 mins</span>
+                <span><i data-lucide="flame"></i> ~420 kcal</span>
+                <span><i data-lucide="layers"></i> 6 Exercises</span>
+              </div>
+              <button class="start-workout-btn" data-title="Upper Body Hypertrophy" data-duration="45">
+                <i data-lucide="play"></i> Start Session
+              </button>
+            </div>
+          </div>
+
+          <!-- Workout Card 3 -->
+          <div class="workout-card glass-card" data-cat="yoga">
+            <div class="workout-card-img">
+              <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&q=80&w=600" alt="Yoga Mobility">
+              <span class="intensity-tag low">Low</span>
+            </div>
+            <div class="workout-card-content">
+              <h3>Morning Energy Yoga</h3>
+              <p class="workout-desc">Revitalizing flow for flexibility, mobility, and core mindfulness.</p>
+              <div class="workout-stats-row">
+                <span><i data-lucide="clock"></i> 20 mins</span>
+                <span><i data-lucide="flame"></i> ~120 kcal</span>
+                <span><i data-lucide="layers"></i> 8 Poses</span>
+              </div>
+              <button class="start-workout-btn" data-title="Morning Energy Yoga" data-duration="20">
+                <i data-lucide="play"></i> Start Session
+              </button>
+            </div>
+          </div>
+
+          <!-- Workout Card 4 -->
+          <div class="workout-card glass-card" data-cat="cardio">
+            <div class="workout-card-img">
+              <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=600" alt="Running">
+              <span class="intensity-tag med">Medium</span>
+            </div>
+            <div class="workout-card-content">
+              <h3>Outdoor Endurance Run</h3>
+              <p class="workout-desc">Steady pace outdoor cardio session with heart rate monitoring.</p>
+              <div class="workout-stats-row">
+                <span><i data-lucide="clock"></i> 35 mins</span>
+                <span><i data-lucide="flame"></i> ~380 kcal</span>
+                <span><i data-lucide="map-pin"></i> GPS Outdoor</span>
+              </div>
+              <button class="start-workout-btn" data-title="Outdoor Endurance Run" data-duration="35">
+                <i data-lucide="play"></i> Start Session
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PROFILE SCREEN ================= -->
+      <section id="screen-profile" class="screen-view">
+        <div class="screen-header">
+          <h2><i data-lucide="user" class="emerald-text"></i> User Profile</h2>
+          <span class="sub-header-text">Manage your parameters, goals, and badges</span>
+        </div>
+
+        <!-- User Profile Hero Header -->
+        <div class="profile-hero-card glass-card">
+          <label class="profile-avatar-box" for="profile-photo-file-input" style="cursor:pointer;" title="Click to Change Profile Photo">
+            <img id="profile-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300" alt="Alex Rivers">
+            <div class="avatar-edit-overlay"><i data-lucide="camera"></i> Edit</div>
+            <div class="level-badge">Lv 14</div>
+          </label>
+          <input type="file" id="profile-photo-file-input" accept="image/*" style="display:none;">
+          <div class="profile-main-info">
+            <h3 id="profile-user-name">Alex Rivers</h3>
+            <p class="profile-rank">Pro Athlete Tier • Member since Jan 2026</p>
+            <div class="profile-stats-mini">
+              <div class="mini-stat">
+                <span class="val" id="profile-weight-val">70 kg</span>
+                <span class="lbl">Weight</span>
+              </div>
+              <div class="mini-stat">
+                <span class="val" id="profile-height-val">178 cm</span>
+                <span class="lbl">Height</span>
+              </div>
+              <div class="mini-stat">
+                <span class="val" id="profile-bmi-val">22.1 (Normal)</span>
+                <span class="lbl">BMI Status</span>
+              </div>
+            </div>
+            <button class="edit-profile-btn" id="open-edit-profile-modal-btn">
+              <i data-lucide="edit-3"></i> Manage Profile & Metrics
+            </button>
+          </div>
+        </div>
+
+        <!-- GitHub-Style Activity & Streak Heatmap -->
+        <div class="section-container glass-card">
+          <div class="section-header">
+            <h3><i data-lucide="calendar" class="emerald-text"></i> Daily Activity Streak Heatmap</h3>
+            <div class="heatmap-streak-stats">
+              <span class="streak-badge" style="background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i data-lucide="flame"></i> <span id="heatmap-current-streak">0</span> Day Streak</span>
+            </div>
+          </div>
+          <span class="sub-header-text">GitHub-style green dot activity contribution matrix (past 14 weeks)</span>
+
+          <div class="github-heatmap-wrapper" style="margin-top: 14px;">
+            <div class="heatmap-months-row">
+              <span>Jul</span>
+              <span>Aug</span>
+              <span>Sep</span>
+              <span>Oct</span>
+            </div>
+            
+            <div class="heatmap-body">
+              <div class="heatmap-day-labels">
+                <span>Mon</span>
+                <span>Wed</span>
+                <span>Fri</span>
+              </div>
+              <div class="heatmap-grid" id="github-heatmap-grid">
+                <!-- Dynamically generated 7x14 dot matrix cells -->
+              </div>
+            </div>
+
+            <!-- Heatmap Legend & Tooltip Summary -->
+            <div class="heatmap-footer">
+              <span class="heatmap-total-text" id="heatmap-active-days-count">0 active days recorded</span>
+              <div class="heatmap-legend">
+                <span>Less</span>
+                <span class="legend-dot lvl-0"></span>
+                <span class="legend-dot lvl-1"></span>
+                <span class="legend-dot lvl-2"></span>
+                <span class="legend-dot lvl-3"></span>
+                <span class="legend-dot lvl-4"></span>
+                <span>More</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Daily Goals Settings -->
+        <div class="section-container glass-card">
+          <h3><i data-lucide="sliders"></i> Daily Target Preferences</h3>
+          <div class="goals-settings-list">
+            <div class="setting-row">
+              <div class="setting-info">
+                <i data-lucide="footprints" class="emerald-text"></i>
+                <div>
+                  <strong>Daily Step Goal</strong>
+                  <p>Target total steps per day</p>
+                </div>
+              </div>
+              <span class="setting-value" id="profile-step-goal-text">10,000 steps</span>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <i data-lucide="flame" class="orange-text"></i>
+                <div>
+                  <strong>Daily Calorie Target</strong>
+                  <p>Caloric budget baseline</p>
+                </div>
+              </div>
+              <span class="setting-value">2,200 kcal</span>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <i data-lucide="droplet" class="blue-text"></i>
+                <div>
+                  <strong>Water Intake Goal</strong>
+                  <p>Hydration objective</p>
+                </div>
+              </div>
+              <span class="setting-value">2,500 ml</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Badges Showcase -->
+        <div class="section-container glass-card">
+          <h3><i data-lucide="award"></i> Achievements & Badges</h3>
+          <div class="badges-grid">
+            <div class="badge-card">
+              <div class="badge-icon-box fire-badge">
+                <i data-lucide="flame"></i>
+              </div>
+              <strong>7-Day Streak</strong>
+              <p>Active every day this week</p>
+            </div>
+
+            <div class="badge-card">
+              <div class="badge-icon-box runner-badge">
+                <i data-lucide="footprints"></i>
+              </div>
+              <strong>10K Master</strong>
+              <p>Hit 10,000 steps 10 times</p>
+            </div>
+
+            <div class="badge-card">
+              <div class="badge-icon-box meal-badge">
+                <i data-lucide="camera"></i>
+              </div>
+              <strong>Smart Scanner</strong>
+              <p>Scanned 25+ healthy meals</p>
+            </div>
+
+            <div class="badge-card">
+              <div class="badge-icon-box iron-badge">
+                <i data-lucide="dumbbell"></i>
+              </div>
+              <strong>Iron Lifter</strong>
+              <p>Completed 15 workout sessions</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- App Settings -->
+        <div class="section-container glass-card">
+          <h3><i data-lucide="settings"></i> App Settings</h3>
+          <div class="goals-settings-list">
+            <div class="setting-row">
+              <div class="setting-info">
+                <i data-lucide="moon"></i>
+                <div>
+                  <strong>Dark Mode Theme</strong>
+                  <p>Switch between dark and light appearance</p>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="profile-theme-toggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <i data-lucide="bell"></i>
+                <div>
+                  <strong>Daily Reminders</strong>
+                  <p>Hydration and workout notifications</p>
+                </div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <i data-lucide="clock" class="emerald-text"></i>
+                <div>
+                  <strong>Midnight Auto-Reset (12:00 AM)</strong>
+                  <p>Refreshes steps, calories & meals daily at midnight</p>
+                </div>
+              </div>
+              <span class="setting-value text-emerald font-bold">Active 🕛</span>
+            </div>
+          </div>
+
+          <!-- Data Management Controls -->
+          <div class="data-mgmt-box">
+            <button class="data-mgmt-btn export-btn" id="export-data-btn">
+              <i data-lucide="download"></i> Export Data (JSON)
+            </button>
+            <button class="data-mgmt-btn reset-btn" id="reset-data-btn">
+              <i data-lucide="trash-2"></i> Reset Daily Data
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= BOTTOM NAVIGATION BAR ================= -->
+    <nav class="bottom-nav">
+      <div class="nav-items-container">
+        <!-- Tab 1: Home -->
+        <button class="nav-tab active" data-screen="home">
+          <i data-lucide="home"></i>
+          <span>Home</span>
+        </button>
+
+        <!-- Tab 2: Steps -->
+        <button class="nav-tab" data-screen="steps">
+          <i data-lucide="footprints"></i>
+          <span>Steps</span>
+        </button>
+
+        <!-- Tab 3: Calories -->
+        <button class="nav-tab" data-screen="calories">
+          <i data-lucide="flame"></i>
+          <span>Calories</span>
+        </button>
+
+        <!-- Center Action Tab: Meal Scanner -->
+        <button class="nav-tab center-fab" data-screen="scanner">
+          <div class="fab-icon">
+            <i data-lucide="camera"></i>
+          </div>
+          <span>Scan AI</span>
+        </button>
+
+        <!-- Tab 4: Workout -->
+        <button class="nav-tab" data-screen="workout">
+          <i data-lucide="dumbbell"></i>
+          <span>Workout</span>
+        </button>
+
+        <!-- Tab 5: Profile -->
+        <button class="nav-tab" data-screen="profile">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ================= LIVE WORKOUT TIMER MODAL ================= -->
+    <div class="modal-overlay hidden" id="workout-modal">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <span class="active-badge"><span class="pulse-dot"></span> LIVE WORKOUT</span>
+          <button class="close-modal-btn" id="close-workout-modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <h2 id="modal-workout-title">Full Body Shred HIIT</h2>
+
+        <!-- Timer Display -->
+        <div class="timer-box">
+          <div class="timer-display" id="workout-timer-clock">00:00</div>
+          <span class="timer-sub">Elapsed Session Time</span>
+        </div>
+
+        <!-- Simulated Heart Rate Graph / Status -->
+        <div class="heart-rate-box">
+          <div class="hr-left">
+            <i data-lucide="activity" class="hr-pulse-icon"></i>
+            <div>
+              <span class="hr-val" id="hr-value">128</span> <span class="hr-unit">BPM</span>
+              <span class="hr-zone">Fat Burn Zone</span>
+            </div>
+          </div>
+          <div class="hr-right">
+            <span class="burn-val" id="modal-burn-cals">0</span> <span class="burn-unit">kcal burned</span>
+          </div>
+        </div>
+
+        <!-- Checklist of Exercises -->
+        <div class="exercise-checklist">
+          <h4>Session Exercises</h4>
+          <label class="exercise-item">
+            <input type="checkbox"> <span>Jumping Jacks - 3 sets x 45 sec</span>
+          </label>
+          <label class="exercise-item">
+            <input type="checkbox"> <span>Bodyweight Squats - 3 sets x 15 reps</span>
+          </label>
+          <label class="exercise-item">
+            <input type="checkbox"> <span>Push-ups - 3 sets x 12 reps</span>
+          </label>
+          <label class="exercise-item">
+            <input type="checkbox"> <span>High Knees - 3 sets x 30 sec</span>
+          </label>
+        </div>
+
+        <!-- Timer Controls -->
+        <div class="timer-controls-row">
+          <button class="timer-btn start" id="timer-start-pause-btn"><i data-lucide="play"></i> Start</button>
+          <button class="timer-btn reset" id="timer-reset-btn"><i data-lucide="rotate-ccw"></i> Reset</button>
+          <button class="timer-btn finish" id="timer-finish-btn"><i data-lucide="check-circle"></i> Complete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= AI ENGINE SETTINGS MODAL ================= -->
+    <div class="modal-overlay hidden" id="ai-settings-modal">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <span class="active-badge violet-text"><i data-lucide="cpu"></i> AI VISION ENGINE</span>
+          <button class="close-modal-btn" id="close-ai-settings-modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <h3>Select Recognition Model</h3>
+
+        <div class="ai-engine-options">
+          <label class="ai-engine-card active" id="option-engine-tf">
+            <input type="radio" name="ai-engine-radio" value="tfjs" checked>
+            <div class="engine-info">
+              <strong>Local TensorFlow.js Vision</strong>
+              <p>On-device AI neural network (MobileNet). 100% offline, zero API keys required.</p>
+            </div>
+          </label>
+
+          <label class="ai-engine-card" id="option-engine-gemini">
+            <input type="radio" name="ai-engine-radio" value="gemini">
+            <div class="engine-info">
+              <strong>Gemini Multimodal Cloud Vision</strong>
+              <p>Deep multimodal AI analysis for complex dishes. Requires API Key.</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="gemini-key-box hidden" id="gemini-key-container">
+          <label for="gemini-api-key-input">Gemini API Key:</label>
+          <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="text-input-field">
+          <span class="input-sub">Stored locally in your browser session.</span>
+        </div>
+
+        <button class="confirm-log-btn" id="save-ai-settings-btn">
+          <i data-lucide="check"></i> Save Engine Settings
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= CUSTOM FOOD LOGGER MODAL ================= -->
+    <div class="modal-overlay hidden" id="custom-meal-modal">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <span class="active-badge emerald-text"><i data-lucide="plus-circle"></i> LOG CUSTOM FOOD ITEM</span>
+          <button class="close-modal-btn" id="close-custom-meal-modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <h3>Enter Food & Macronutrients</h3>
+
+        <form id="custom-food-form" class="custom-food-form">
+          <div class="form-group">
+            <label for="custom-food-name">Food Title / Dish Name:</label>
+            <input type="text" id="custom-food-name" placeholder="e.g., Peanut Butter Oats Bowl" class="text-input-field" required>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="custom-food-cals">Calories (kcal):</label>
+              <input type="number" id="custom-food-cals" placeholder="350" class="text-input-field" required>
+            </div>
+            <div class="form-group">
+              <label for="custom-food-protein">Protein (g):</label>
+              <input type="number" id="custom-food-protein" placeholder="24" class="text-input-field" required>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="custom-food-carbs">Carbs (g):</label>
+              <input type="number" id="custom-food-carbs" placeholder="40" class="text-input-field" required>
+            </div>
+            <div class="form-group">
+              <label for="custom-food-fats">Fats (g):</label>
+              <input type="number" id="custom-food-fats" placeholder="12" class="text-input-field" required>
+            </div>
+          </div>
+
+          <button type="submit" class="confirm-log-btn">
+            <i data-lucide="check"></i> Add to Daily Meal Log
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= BODY WEIGHT UPDATE MODAL ================= -->
+    <div class="modal-overlay hidden" id="weight-modal">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <span class="active-badge orange-text"><i data-lucide="scale"></i> BODY WEIGHT TRACKER</span>
+          <button class="close-modal-btn" id="close-weight-modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <h3>Update Body Weight & Target Goal</h3>
+
+        <form id="weight-update-form" class="custom-food-form">
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="input-current-weight">Current Weight (kg):</label>
+              <input type="number" step="0.1" id="input-current-weight" value="70.0" class="text-input-field" required>
+            </div>
+            <div class="form-group">
+              <label for="input-target-weight">Target Goal Weight (kg):</label>
+              <input type="number" step="0.1" id="input-target-weight" value="68.0" class="text-input-field" required>
+            </div>
+          </div>
+
+          <button type="submit" class="confirm-log-btn">
+            <i data-lucide="check"></i> Save Weight Update
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= EDIT PROFILE & BODY METRICS MODAL ================= -->
+    <div class="modal-overlay hidden" id="edit-profile-modal">
+      <div class="modal-card glass-card">
+        <div class="modal-header">
+          <span class="active-badge emerald-text"><i data-lucide="user-check"></i> MANAGE PROFILE & METRICS</span>
+          <button class="close-modal-btn" id="close-edit-profile-modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <h3>Manage Your Parameters</h3>
+
+        <form id="edit-profile-form" class="custom-food-form">
+          <div class="form-group">
+            <label for="input-profile-name">User Name:</label>
+            <input type="text" id="input-profile-name" value="Alex Rivers" class="text-input-field" required>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label for="input-profile-weight">Body Weight (kg):</label>
+              <input type="number" step="0.1" id="input-profile-weight" value="70.0" class="text-input-field" required>
+            </div>
+            <div class="form-group">
+              <label for="input-profile-target-weight">Target Weight (kg):</label>
+              <input type="number" step="0.1" id="input-profile-target-weight" value="68.0" class="text-input-field" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-profile-height">Height (cm):</label>
+            <input type="number" id="input-profile-height" value="178" class="text-input-field" required>
+          </div>
+
+          <button type="submit" class="confirm-log-btn">
+            <i data-lucide="check"></i> Save Profile Parameters
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="toast hidden">
+      <i data-lucide="check-circle-2" class="toast-icon"></i>
+      <span id="toast-message">Notification message</span>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Register Service Worker for PWA Offline Caching
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('FitTrack AI Service Worker Registered:', reg.scope))
+          .catch((err) => console.warn('Service Worker registration error:', err));
+      });
+    }
+  </script>
+</body>
+</html>
